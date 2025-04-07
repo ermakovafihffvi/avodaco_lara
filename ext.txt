@@ -1,0 +1,6 @@
+
+
+    composer:  https://www.digitalocean.com/community/tutorials/how-to-install-and-use-composer-on-ubuntu-22-04
+    php 8.2 https://www.liquidweb.com/help-docs/install-php-on-ubuntu/
+
+    
