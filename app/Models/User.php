@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'current_group_id'
     ];
 
     /**
@@ -46,5 +47,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany(UserGroup::class, 'user_to_group', 'user_id', 'group_id');
+    }
+
+    public function currentGroup()
+    {
+        return $this->belongsTo(UserGroup::class, 'current_group_id');
     }
 }
