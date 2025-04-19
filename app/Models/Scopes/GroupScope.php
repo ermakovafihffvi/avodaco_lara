@@ -14,6 +14,6 @@ class GroupScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $builder->where('group_id', Auth::user()->currentGroup->id);
+        $builder->where('group_id', Auth::user()->current_group_id);
     }
 }

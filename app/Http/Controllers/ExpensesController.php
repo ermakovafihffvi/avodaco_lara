@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoryExp;
 use App\Models\Expenses;
-use App\Models\Income;
 use App\Models\User;
 
 class ExpensesController extends Controller
@@ -11,7 +11,6 @@ class ExpensesController extends Controller
     public function getTotalExpenses()
     {
         $totalExpenses = Expenses::selectRaw('category_id, SUM(sum) as total')
-            ->with('category')
             ->groupBy('category_id')
             ->get();
         return response()->json($totalExpenses);
@@ -31,5 +30,10 @@ class ExpensesController extends Controller
     public function updateUserExpense()
     {
 
+    }
+
+    public function getAllCategories()
+    {
+        return response()->json(CategoryExp::where('isActive', true)->get());
     }
 }

@@ -21,5 +21,6 @@ Route::namespace("App\\Http\\Controllers")
 
         Route::get('/{user}/expenses', 'ExpensesController@getUserExpenses');
         Route::get('/{user}/incomes', 'IncomeController@getUserIncomes');
-
+        Route::get('/users-list', 'UserController@getUsersList');
+        Route::get('/expenses-categories', 'ExpensesController@getAllCategories');
     });
