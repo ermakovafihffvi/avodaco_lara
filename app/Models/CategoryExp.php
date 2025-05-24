@@ -11,7 +11,7 @@ class CategoryExp extends Model
     use HasFactory;
     public $table = "category_exp";
     public $timestamps = false;
-    protected $fillable = array('title', 'str_id', 'limit', 'isActive', 'currency_id', 'desc');
+    protected $fillable = array('title', 'str_id', 'limit', 'isActive', 'currency_id', 'desc', 'special');
 
     /**
      * The "booted" method of the model.
@@ -24,5 +24,10 @@ class CategoryExp extends Model
     public function currency()
     {
         return $this->belongsTo(Currency::class, 'currency_id');
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expenses::class);
     }
 }

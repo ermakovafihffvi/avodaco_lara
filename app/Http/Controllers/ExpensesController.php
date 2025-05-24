@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\CategoryExp;
 use App\Models\Expenses;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExpensesController extends Controller
 {
@@ -16,9 +18,16 @@ class ExpensesController extends Controller
         return response()->json($totalExpenses);
     }
 
-    public function getUserExpenses(User $user)
+    public function getUserExpenses(Request $request, User $user)
     {
-        $expenses = Expenses::where('user_id', $user->id)->get();
+        $isSpecial = $request->query('special') ?? 0;
+        //DB::enableQueryLog();
+        $expenses = Expenses::whereHas('category', function ($q) use ($isSpecial) {
+                $q->where('special', $isSpecial)->where('isActive', true);
+            })
+            ->where('user_id', $user->id)
+            ->get();
+        //dump(DB::getQueryLog());
         return response()->json($expenses);
     }
 
@@ -32,8 +41,9 @@ class ExpensesController extends Controller
 
     }
 
-    public function getAllCategories()
+    public function getAllCategories(Request $request)
     {
-        return response()->json(CategoryExp::where('isActive', true)->get());
+        $isSpecial = $request->query('special') ?? 0;
+        return response()->json(CategoryExp::where('isActive', true)->where('special', $isSpecial)->get());
     }
 }

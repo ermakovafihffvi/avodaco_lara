@@ -25,7 +25,7 @@ class Expenses extends Model
 
     public function category()
     {
-        return $this->belongsTo(CategoryExp::class, 'category_id');
+        return $this->belongsTo(CategoryExp::class);
     }
 
     public function user()

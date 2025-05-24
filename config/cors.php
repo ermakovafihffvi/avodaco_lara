@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://avocado.test,http://avocado.test:3000'],
+    'allowed_origins' => ['http://avocado.test'],
 
     'allowed_origins_patterns' => [],
 
