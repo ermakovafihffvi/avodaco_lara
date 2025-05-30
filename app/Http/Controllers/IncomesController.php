@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Income;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 
 class IncomesController extends Controller
 {
@@ -21,13 +24,19 @@ class IncomesController extends Controller
         return response()->json($expenses);
     }
 
-    public function addUserIncome()
+    public function updateIncome(Request $incomeData)
     {
-
-    }
-
-    public function updateUserIncome()
-    {
-
+        if ($incomeData->id) {
+            $income = Income::find($incomeData->id);
+        } else {
+            $income = new Income();
+        }
+        $income->created_at = (new Carbon($incomeData->date))->toDateTimeString();
+        $income->desc = $incomeData->description;
+        $income->sum = $incomeData->sum;
+        $income->user_id = $incomeData->user_id;
+        $income->currency_id = $incomeData->currency_id;
+        $income->save();
+        return Response::json($income);
     }
 }

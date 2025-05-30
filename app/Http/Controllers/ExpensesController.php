@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CategoryExp;
 use App\Models\Expenses;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 
 class ExpensesController extends Controller
 {
@@ -31,14 +33,20 @@ class ExpensesController extends Controller
         return response()->json($expenses);
     }
 
-    public function addUserExpense()
+    public function updateExpense(Request $expenseData)
     {
-
-    }
-
-    public function updateUserExpense()
-    {
-
+        if ($expenseData->id) {
+            $expense = Expenses::find($expenseData->id);
+        } else {
+            $expense = new Expenses();
+        }
+        $expense->created_at = (new Carbon($expenseData->date))->toDateTimeString();
+        $expense->desc = $expenseData->description;
+        $expense->sum = $expenseData->sum;
+        $expense->user_id = $expenseData->user_id;
+        $expense->category_id = CategoryExp::select('id')->where('str_id', $expenseData->category_str)->first()->id;
+        $expense->save();
+        return Response::json($expense);
     }
 
     public function getAllCategories(Request $request)

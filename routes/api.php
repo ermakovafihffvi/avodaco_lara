@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -20,7 +21,14 @@ Route::namespace("App\\Http\\Controllers")
         Route::post('/{currency}/set-rate', 'CurrencyController@setRate');
 
         Route::get('/{user}/expenses', 'ExpensesController@getUserExpenses');
-        Route::get('/{user}/incomes', 'IncomeController@getUserIncomes');
+        Route::get('/{user}/incomes', 'IncomesController@getUserIncomes');
         Route::get('/users-list', 'UserController@getUsersList');
         Route::get('/expenses-categories', 'ExpensesController@getAllCategories');
+
+        Route::get('/current-user', function () {
+            return Auth::user();
+        });
+
+        Route::post('/update-expense', 'ExpensesController@updateExpense');
+        Route::post('/update-income', 'IncomesController@updateIncome');
     });
