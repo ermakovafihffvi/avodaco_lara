@@ -51,7 +51,12 @@ class ExpensesController extends Controller
 
     public function getAllCategories(Request $request)
     {
+        $notAll = $request->query('all') ? !$request->query('all') : true;
         $isSpecial = $request->query('special') ?? 0;
-        return response()->json(CategoryExp::where('isActive', true)->where('special', $isSpecial)->get());
+        return response()->json(CategoryExp::where('isActive', true)
+            ->when($notAll, function($query) use ($isSpecial) {
+                $query->where('special', $isSpecial);
+            })
+            ->get());
     }
 }
