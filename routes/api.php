@@ -19,6 +19,7 @@ Route::namespace("App\\Http\\Controllers")
         Route::get('/total-expenses', 'ExpensesController@getTotalExpenses');
         Route::get('/currencies', 'CurrencyController@getAllCurrencies');
         Route::post('/{currency}/set-rate', 'CurrencyController@setRate');
+        Route::post('/add-currency', 'CurrencyController@addRate');
 
         Route::get('/{user}/expenses', 'ExpensesController@getUserExpenses');
         Route::get('/{user}/incomes', 'IncomesController@getUserIncomes');

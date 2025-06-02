@@ -17,6 +17,16 @@ class CurrencyController extends Controller
     {
         $currency->rate = $request->rate;
         $currency->save();
-        return response();
+        return response()->json($currency);
+    }
+
+    public function addRate(Request $request)
+    {
+        $currency = new Currency();
+        $currency->title = $request->title;
+        $currency->str_id = $request->str_id;
+        $currency->rate = $request->rate;
+        $currency->save();
+        return response()->json($currency);
     }
 }
