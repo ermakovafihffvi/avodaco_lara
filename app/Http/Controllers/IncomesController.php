@@ -24,7 +24,7 @@ class IncomesController extends Controller
         return response()->json($expenses);
     }
 
-    public function updateIncome(Request $incomeData)
+    public function update(Request $incomeData)
     {
         if ($incomeData->id) {
             $income = Income::find($incomeData->id);
@@ -38,5 +38,11 @@ class IncomesController extends Controller
         $income->currency_id = $incomeData->currency_id;
         $income->save();
         return Response::json($income);
+    }
+
+    public function delete(Income $income)
+    {
+        $income->delete();
+        return Response::json();
     }
 }

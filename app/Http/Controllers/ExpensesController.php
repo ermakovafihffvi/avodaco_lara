@@ -33,7 +33,7 @@ class ExpensesController extends Controller
         return response()->json($expenses);
     }
 
-    public function updateExpense(Request $expenseData)
+    public function update(Request $expenseData)
     {
         if ($expenseData->id) {
             $expense = Expenses::find($expenseData->id);
@@ -49,6 +49,12 @@ class ExpensesController extends Controller
         return Response::json($expense);
     }
 
+    public function delete(Expenses $expense)
+    {
+        $expense->delete();
+        return Response::json();
+    }
+
     public function getAllCategories(Request $request)
     {
         $notAll = $request->query('all') ? !$request->query('all') : true;
@@ -58,5 +64,11 @@ class ExpensesController extends Controller
                 $query->where('special', $isSpecial);
             })
             ->get());
+    }
+
+    public function deleteExpCategory(CategoryExp $category)
+    {
+        $category->delete();
+        return Response::json();
     }
 }
