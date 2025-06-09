@@ -71,4 +71,17 @@ class ExpensesController extends Controller
         $category->delete();
         return Response::json();
     }
+
+    public function updateExpCategory(CategoryExp $category, Request $request)
+    {
+        $category->update([
+            $request->input('field') => $request->input('value')
+        ]);
+        $category->save();
+        return Response::json();
+    }
+
+    public function addExpCategory(Request $request) {
+        return Response::json();
+    }
 }

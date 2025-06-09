@@ -33,8 +33,17 @@ Route::namespace("App\\Http\\Controllers")
             Route::delete('/{expense}/delete', 'ExpensesController@delete');
         });
 
-        Route::delete('/expenses-category/{category}/delete', 'ExpensesController@deleteExpCategory');
-        Route::delete('/savings-category/{category}/delete', 'SavingsController@deleteSavingsCategory');
+        Route::prefix('expenses-category')->group(function () {
+            Route::delete('/{category}/delete', 'ExpensesController@deleteExpCategory');
+            Route::put('/{category}/update', 'ExpensesController@updateExpCategory');
+            Route::post('/add', 'ExpensesController@addExpCategory');
+        });
+
+        Route::prefix('savings-category')->group(function () {
+            Route::delete('/{category}/delete', 'SavingsController@deleteSavingsCategory');
+            Route::put('/{category}/update', 'SavingsController@updateSavingsCategory');
+            Route::post('/add', 'SavingsController@addSavingsCategory');
+        });
 
         Route::get('/currencies', 'CurrencyController@getAllCurrencies');
         Route::post('/{currency}/set-rate', 'CurrencyController@setRate');
