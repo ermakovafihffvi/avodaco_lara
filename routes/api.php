@@ -21,7 +21,7 @@ Route::namespace("App\\Http\\Controllers")
         Route::prefix('income')->group(function () {
             Route::get('/total', 'IncomesController@getTotalIncomes');
             Route::get('/user/{user}', 'IncomesController@getUserIncomes');
-            Route::post('/income/update', 'IncomesController@update');
+            Route::post('/update', 'IncomesController@update');
             Route::delete('/{income}/delete', 'IncomesController@delete');
         });
 
@@ -47,6 +47,12 @@ Route::namespace("App\\Http\\Controllers")
             Route::delete('/{category}/delete', 'SavingsController@deleteSavingsCategory');
             Route::put('/{category}/update', 'SavingsController@updateSavingsCategory');
             Route::post('/add', 'SavingsController@addSavingsCategory');
+        });
+
+        Route::prefix('dashboard')->group(function () {
+            Route::post('/last_incomes', 'IncomesController@getLastIncomes');
+            Route::post('/last_expenses', 'ExpensesController@getLastExpenses');
+            Route::post('/last_savings', 'SavingsController@getLastSavings');
         });
 
         Route::get('/currencies', 'CurrencyController@getAllCurrencies');
