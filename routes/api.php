@@ -33,6 +33,10 @@ Route::namespace("App\\Http\\Controllers")
             Route::delete('/{expense}/delete', 'ExpensesController@delete');
         });
 
+        Route::prefix('saving')->group(function () {
+            Route::get('/categories', 'SavingsController@getCategories');
+        });
+
         Route::prefix('expenses-category')->group(function () {
             Route::delete('/{category}/delete', 'ExpensesController@deleteExpCategory');
             Route::put('/{category}/update', 'ExpensesController@updateExpCategory');

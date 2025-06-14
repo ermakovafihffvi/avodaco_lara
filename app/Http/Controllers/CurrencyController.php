@@ -15,7 +15,7 @@ class CurrencyController extends Controller
 
     public function setRate(Currency $currency, Request $request)
     {
-        $currency->rate = $request->rate;
+        $currency->rate = trim($request->rate);
         $currency->save();
         return response()->json($currency);
     }
@@ -23,9 +23,9 @@ class CurrencyController extends Controller
     public function addRate(Request $request)
     {
         $currency = new Currency();
-        $currency->title = $request->title;
-        $currency->str_id = $request->str_id;
-        $currency->rate = $request->rate;
+        $currency->title = trim($request->title);
+        $currency->str_id = trim($request->str_id);
+        $currency->rate = trim($request->rate);
         $currency->save();
         return response()->json($currency);
     }

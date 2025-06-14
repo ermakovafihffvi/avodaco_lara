@@ -6,6 +6,7 @@ use App\Models\Income;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class IncomesController extends Controller
@@ -32,9 +33,9 @@ class IncomesController extends Controller
             $income = new Income();
         }
         $income->created_at = (new Carbon($incomeData->date))->toDateTimeString();
-        $income->desc = $incomeData->description;
-        $income->sum = $incomeData->sum;
-        $income->user_id = $incomeData->user_id;
+        $income->desc = trim($incomeData->description);
+        $income->sum = trim($incomeData->sum);
+        $income->user_id = $incomeData->user_id ?? Auth::user()->id;
         $income->currency_id = $incomeData->currency_id;
         $income->save();
         return Response::json($income);

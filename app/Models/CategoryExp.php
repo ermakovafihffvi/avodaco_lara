@@ -6,6 +6,7 @@ use App\Models\Scopes\GroupScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryExp extends Model
 {
@@ -21,6 +22,12 @@ class CategoryExp extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new GroupScope);
+
+        static::creating(function ($model) {
+            if (empty($model->group_id)) {
+                $model->group_id = Auth::user()->current_group_id;
+            }
+        });
     }
 
     public function currency()

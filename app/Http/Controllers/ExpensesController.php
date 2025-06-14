@@ -7,6 +7,7 @@ use App\Models\Expenses;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
@@ -41,10 +42,10 @@ class ExpensesController extends Controller
             $expense = new Expenses();
         }
         $expense->created_at = (new Carbon($expenseData->date))->toDateTimeString();
-        $expense->desc = $expenseData->description;
-        $expense->sum = $expenseData->sum;
-        $expense->user_id = $expenseData->user_id;
-        $expense->category_id = CategoryExp::select('id')->where('str_id', $expenseData->category_str)->first()->id;
+        $expense->desc = trim($expenseData->description);
+        $expense->sum = trim($expenseData->sum);
+        $expense->user_id = $expenseData->user_id ?? Auth::user()->id;
+        $expense->category_id = $expenseData->category_id;
         $expense->save();
         return Response::json($expense);
     }
@@ -59,7 +60,10 @@ class ExpensesController extends Controller
     {
         $notAll = $request->query('all') ? !$request->query('all') : true;
         $isSpecial = $request->query('special') ?? 0;
-        return response()->json(CategoryExp::where('isActive', true)
+        return response()->json(CategoryExp::
+            when($notAll, function($query) {
+                $query->where('isActive', true);
+            })
             ->when($notAll, function($query) use ($isSpecial) {
                 $query->where('special', $isSpecial);
             })
@@ -75,13 +79,23 @@ class ExpensesController extends Controller
     public function updateExpCategory(CategoryExp $category, Request $request)
     {
         $category->update([
-            $request->input('field') => $request->input('value')
+            $request->input('field') => trim($request->input('value'))
         ]);
         $category->save();
         return Response::json();
     }
 
     public function addExpCategory(Request $request) {
-        return Response::json();
+        $category = CategoryExp::create([
+            'title' => trim($request->input('title')), 
+            'str_id' => trim($request->input('str_id')), 
+            'limit' => trim($request->input('limit')), 
+            'isActive' => $request->input('isActive'), 
+            'currency_id' => $request->input('currency'), 
+            'desc' => trim($request->input('desc')), 
+            'special' => $request->input('special')
+        ]);
+        $category->save();
+        return Response::json($category);
     }
 }
