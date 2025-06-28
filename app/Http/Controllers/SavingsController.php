@@ -22,7 +22,8 @@ class SavingsController {
         return Response::json();
     }
 
-    public function addSavingsCategory(Request $request) {
+    public function addSavingsCategory(Request $request) 
+    {
         $category = CategorySavings::create([
             'title' => trim($request->input('title')), 
             'str_id' => trim($request->input('str_id')), 
@@ -34,7 +35,8 @@ class SavingsController {
         return Response::json($category);
     }
 
-    public function getCategories() {
+    public function getCategories() 
+    {
         return Response::json(CategorySavings::withTrashed()->get());
     }
 }

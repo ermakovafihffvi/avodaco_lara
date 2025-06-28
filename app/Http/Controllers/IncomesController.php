@@ -51,68 +51,34 @@ class IncomesController extends Controller
 
     public function getLastIncomes(Request $request)
     {
-        $months = [];
-        $from = Carbon::createFromFormat('Y-m-d', $request->input('from') . '-' . UserGroup::XDATE)->format('Y-m-d');
+        $dateRange = $request->input('date');
+        $xDate = UserGroup::XDATE;
 
-        $start = Carbon::createFromFormat('Y-m', $request->input('from'));
-        $end = Carbon::createFromFormat('Y-m-d', $request->input('to') . '-' . UserGroup::XDATE);
-
-        while ($start <= $end) {
-            $months[] = $start->format('Y-m');
-            $start->addMonth();
+        $today = Carbon::today()->day;
+        if ($today > 22) {
+            $start = Carbon::create($dateRange[0]['year'], $dateRange[0]['month'] + 1, $xDate + 1)->startOfDay();
+            $end = Carbon::create($dateRange[1]['year'], $dateRange[1]['month'] + 2, $xDate)->endOfDay();
+        } else {
+            $start = Carbon::create($dateRange[0]['year'], $dateRange[0]['month'], $xDate + 1)->startOfDay();
+            $end = Carbon::create($dateRange[1]['year'], $dateRange[1]['month'] + 1, $xDate)->endOfDay();
         }
 
-        $end = $end->addDay()->format('Y-m-d');
-
-        //total
-        //DB::enableQueryLog();
-        $monthlyIncomes = DB::table('income')
-            ->join('currency', 'income.currency_id', '=', 'currency.id')
-            ->selectRaw('
-                DATE_FORMAT(income.created_at, "%Y-%m") as month,
-                ROUND(SUM(income.sum / currency.rate), 2) as total
-            ')
-            ->whereBetween('income.created_at', [$from . ' 00:00:00', $end . ' 00:00:00'])
-            ->where('income.group_id', Auth::user()->current_group_id)
-            ->groupBy('month')
-            ->pluck('total', 'month');
-
-        //dump(DB::getQueryLog());
-        $complete = collect($months)->mapWithKeys(fn($month) => [
-            $month => $monthlyIncomes[$month] ?? 0
-        ]);
-
-
-        //for users
-        //DB::enableQueryLog();
-        $results = DB::table('income')
-            ->join('currency', 'income.currency_id', '=', 'currency.id')
-            ->selectRaw('
-                income.user_id,
-                DATE_FORMAT(income.created_at, "%Y-%m") as month,
-                ROUND(SUM(income.sum / currency.rate), 2) as total
-            ')
-            ->whereBetween('income.created_at', [$from . ' 00:00:00', $end . ' 00:00:00'])
-            ->where('income.group_id', Auth::user()->current_group_id)
-            ->groupBy('income.user_id', 'month')
-            ->orderBy('income.user_id')
-            ->orderBy('month')
+        $totals = Income::query()
+            ->whereBetween('created_at', [$start, $end])
+            ->select([
+                'user_id',
+                'currency_id',
+                DB::raw("DATE_FORMAT(DATE_SUB(created_at, INTERVAL {$xDate} DAY), '%Y-%m') as pseudo_month"),
+                DB::raw('SUM(sum) as total_income'),
+            ])
+            ->groupBy(
+                'user_id',
+                'currency_id',
+                DB::raw("DATE_FORMAT(DATE_SUB(created_at, INTERVAL {$xDate} DAY), '%Y-%m')")
+            )
+            ->orderBy('pseudo_month')
             ->get();
-        //dump(DB::getQueryLog());
-        //dump($results);
 
-        $users = $results->groupBy('user_id')->map(function ($results) use ($months) {
-        
-            $recordsByMonth = $results->pluck('total', 'month');
-        
-            return collect($months)->mapWithKeys(fn($month) => [
-                $month => $recordsByMonth[$month] ?? 0,
-            ]);
-        });
-
-        return Response::json([
-            'total' => $complete,
-            'users' => $users
-        ]);
+        return Response::json($totals);
     }
 }

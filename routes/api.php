@@ -52,7 +52,14 @@ Route::namespace("App\\Http\\Controllers")
         Route::prefix('dashboard')->group(function () {
             Route::post('/last_incomes', 'IncomesController@getLastIncomes');
             Route::post('/last_expenses', 'ExpensesController@getLastExpenses');
-            Route::post('/last_savings', 'SavingsController@getLastSavings');
+            Route::post('/last_states', 'CurrentStateController@getLastStates');
+        });
+
+        Route::prefix('state')->group(function () {
+            Route::get('/categories', 'CurrentStateController@getCategories');
+            Route::delete('/{category}/delete', 'CurrentStateController@deleteCategory');
+            Route::put('/{category}/update', 'CurrentStateController@updateCategory');
+            Route::post('/add', 'CurrentStateController@addCategory');
         });
 
         Route::get('/currencies', 'CurrencyController@getAllCurrencies');

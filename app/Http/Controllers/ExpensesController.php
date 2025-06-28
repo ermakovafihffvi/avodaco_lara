@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CategoryExp;
 use App\Models\Expenses;
 use App\Models\User;
+use App\Models\UserGroup;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,5 +98,43 @@ class ExpensesController extends Controller
         ]);
         $category->save();
         return Response::json($category);
+    }
+
+    public function getLastExpenses(Request $request)
+    {
+        $dateRange = $request->input('date');
+        $xDate = UserGroup::XDATE;
+
+        $today = Carbon::today()->day;
+        if ($today > 22) {
+            $start = Carbon::create($dateRange[0]['year'], $dateRange[0]['month'] + 1, $xDate + 1)->startOfDay();
+            $end = Carbon::create($dateRange[1]['year'], $dateRange[1]['month'] + 2, $xDate)->endOfDay();
+        } else {
+            $start = Carbon::create($dateRange[0]['year'], $dateRange[0]['month'], $xDate + 1)->startOfDay();
+            $end = Carbon::create($dateRange[1]['year'], $dateRange[1]['month'] + 1, $xDate)->endOfDay();
+        }
+
+        $categories = CategoryExp::query()
+            ->where('isActive', true)
+            ->where('special', false)
+            ->get(['id', 'title', 'str_id', 'currency_id']);
+        $categoryIds = $categories->pluck('id')->all();
+
+        $categoriesWithAvg = Expenses::query()
+            ->whereBetween('created_at', [$start, $end])
+            ->whereIn('category_id', $categoryIds)
+            ->select([
+                'category_id',
+                DB::raw("DATE_FORMAT(DATE_SUB(created_at, INTERVAL {$xDate} DAY), '%Y-%m') as pseudo_month"),
+                DB::raw("SUM(sum) as sum_amount"),
+            ])
+            ->groupBy('category_id', DB::raw("DATE_FORMAT(DATE_SUB(created_at, INTERVAL {$xDate} DAY), '%Y-%m')"))
+            ->orderBy('pseudo_month')
+            ->get();
+
+        return Response::json([
+            'categories' => $categories,
+            'avgs' => $categoriesWithAvg
+        ]);
     }
 }
