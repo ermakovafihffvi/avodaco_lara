@@ -61,21 +61,34 @@ class CurrentStateController extends Controller
         }
 
         $result = CurrentState::query()
-            ->whereBetween('created_at', [$start, $end])
+            ->whereBetween('pseudo_month', [$start->format('Y-m'), $end->format('Y-m')])
             ->select([
                 'user_id',
                 'category_id',
-                DB::raw("DATE_FORMAT(DATE_SUB(created_at, INTERVAL {$xDate} DAY), '%Y-%m') as pseudo_month"),
-                DB::raw('SUM(sum) as total_sum'),
+                'pseudo_month',
+                DB::raw('SUM(sum) as sum'),
             ])
             ->groupBy(
                 'user_id',
                 'category_id',
-                DB::raw("DATE_FORMAT(DATE_SUB(created_at, INTERVAL {$xDate} DAY), '%Y-%m')")
+                'pseudo_month'
             )
             ->orderBy('pseudo_month')
             ->get();
 
         return Response::json($result);
+    }
+
+    public function updateState(Request $request)
+    {
+        $state = CurrentState::firstOrNew([
+            'user_id' => $request->input('user_id'),
+            'category_id' => $request->input('category_id'),
+            'pseudo_month' => $request->input('pseudo_month')
+        ]);
+        $state->sum = $request->input('sum');
+        $state->save();
+
+        return Response::json($state);
     }
 }

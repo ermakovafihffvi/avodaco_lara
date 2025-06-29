@@ -16,6 +16,7 @@ class CurrentState extends Model
         'group_id',
         'category_id',
         'sum',
+        'pseudo_month'
     ];
 
     /**

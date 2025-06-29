@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('group_id');
             $table->unsignedBigInteger('category_id');
             $table->decimal('sum', 15, 2);
+            $table->string('pseudo_month');
             $table->timestamps();
             $table->softDeletes();
 

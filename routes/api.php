@@ -57,9 +57,11 @@ Route::namespace("App\\Http\\Controllers")
 
         Route::prefix('state')->group(function () {
             Route::get('/categories', 'CurrentStateController@getCategories');
-            Route::delete('/{category}/delete', 'CurrentStateController@deleteCategory');
-            Route::put('/{category}/update', 'CurrentStateController@updateCategory');
-            Route::post('/add', 'CurrentStateController@addCategory');
+            Route::delete('/category/{category}/delete', 'CurrentStateController@deleteCategory');
+            Route::put('/category/{category}/update', 'CurrentStateController@updateCategory');
+            Route::post('/category/add', 'CurrentStateController@addCategory');
+
+            Route::post('/update', 'CurrentStateController@updateState');
         });
 
         Route::get('/currencies', 'CurrencyController@getAllCurrencies');
