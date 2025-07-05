@@ -63,16 +63,12 @@ class CurrentStateController extends Controller
         $result = CurrentState::query()
             ->whereBetween('pseudo_month', [$start->format('Y-m'), $end->format('Y-m')])
             ->select([
+                'id',
                 'user_id',
                 'category_id',
                 'pseudo_month',
-                DB::raw('SUM(sum) as sum'),
+                'sum',
             ])
-            ->groupBy(
-                'user_id',
-                'category_id',
-                'pseudo_month'
-            )
             ->orderBy('pseudo_month')
             ->get();
 
