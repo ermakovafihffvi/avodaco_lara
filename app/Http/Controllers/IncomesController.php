@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Income;
+use App\Models\Scopes\BasePeriodScope;
 use App\Models\User;
 use App\Models\UserGroup;
 use Carbon\Carbon;
@@ -63,7 +64,7 @@ class IncomesController extends Controller
             $end = Carbon::create($dateRange[1]['year'], $dateRange[1]['month'] + 1, $xDate)->endOfDay();
         }
 
-        $totals = Income::query()
+        $totals = Income::withoutGlobalScope(BasePeriodScope::class)
             ->whereBetween('created_at', [$start, $end])
             ->select([
                 'user_id',

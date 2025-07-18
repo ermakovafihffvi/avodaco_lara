@@ -2,19 +2,28 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\BasePeriodScope;
 use App\Models\Scopes\GroupScope;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
-class CategorySavings extends Model
+class RepeatableExpense extends Model
 {
-    use HasFactory;
     use SoftDeletes;
-    public $table = "category_savings";
-    public $timestamps = false;
-    protected $fillable = array('title', 'str_id', 'limit', 'currency_id', 'desc');
+
+    protected $table = 'repeatable_expenses';
+
+    protected $fillable = [
+        'expense_id',
+        'is_every_month',
+        'times',
+    ];
+
+    protected $casts = [
+        'is_every_month' => 'boolean',
+        'times' => 'integer',
+    ];
 
     /**
      * The "booted" method of the model.
@@ -22,6 +31,7 @@ class CategorySavings extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new GroupScope);
+        static::addGlobalScope(new BasePeriodScope);
 
         static::creating(function ($model) {
             $user = Auth::user();
@@ -31,8 +41,8 @@ class CategorySavings extends Model
         });
     }
 
-    public function currency()
+    public function expense()
     {
-        return $this->belongsTo(Currency::class, 'currency_id');
+        return $this->belongsTo(Expense::class, 'expense_id');
     }
 }

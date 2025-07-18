@@ -21,11 +21,12 @@ class Income extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new GroupScope);
-        //static::addGlobalScope(new BasePeriodScope);
+        static::addGlobalScope(new BasePeriodScope);
 
         static::creating(function ($model) {
-            if (empty($model->group_id)) {
-                $model->group_id = Auth::user()->current_group_id;
+            $user = Auth::user();
+            if (empty($model->group_id) && $user) {
+                $model->group_id = $user->current_group_id;
             }
         });
     }

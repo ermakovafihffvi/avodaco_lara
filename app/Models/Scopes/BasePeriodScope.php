@@ -27,6 +27,7 @@ class BasePeriodScope implements Scope
                 "end_date" => Carbon::create($now->year, $now->month + 1, "23", 0, 0, 0, $now->timezone),
             ];
         }
-        $builder->where('income.created_at', ">", $arr['start_date'])->where('income.created_at', "<", $arr['end_date']);
+        $builder->where($builder->getModel()->getTable().'.created_at', ">", $arr['start_date'])
+            ->where($builder->getModel()->getTable().'.created_at', "<", $arr['end_date']);
     }
 }

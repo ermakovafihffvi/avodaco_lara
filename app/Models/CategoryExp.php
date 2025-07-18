@@ -14,7 +14,7 @@ class CategoryExp extends Model
     use SoftDeletes;
     public $table = "category_exp";
     public $timestamps = false;
-    protected $fillable = array('title', 'str_id', 'limit', 'isActive', 'currency_id', 'desc', 'special');
+    protected $fillable = array('title', 'str_id', 'limit', 'isActive', 'currency_id', 'desc', 'special', 'group_id');
 
     /**
      * The "booted" method of the model.
@@ -24,8 +24,9 @@ class CategoryExp extends Model
         static::addGlobalScope(new GroupScope);
 
         static::creating(function ($model) {
-            if (empty($model->group_id)) {
-                $model->group_id = Auth::user()->current_group_id;
+            $user = Auth::user();
+            if (empty($model->group_id) && $user) {
+                $model->group_id = $user->current_group_id;
             }
         });
     }
@@ -37,6 +38,6 @@ class CategoryExp extends Model
 
     public function expenses()
     {
-        return $this->hasMany(Expenses::class);
+        return $this->hasMany(Expense::class);
     }
 }

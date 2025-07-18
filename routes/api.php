@@ -31,6 +31,9 @@ Route::namespace("App\\Http\\Controllers")
             Route::get('/categories', 'ExpensesController@getAllCategories');
             Route::post('/update', 'ExpensesController@update');
             Route::delete('/{expense}/delete', 'ExpensesController@delete');
+
+            Route::get('/scheduled', 'ExpensesController@getScheduled');
+            Route::post('/scheduled/update', 'ExpensesController@updateScheduled');
         });
 
         Route::prefix('saving')->group(function () {

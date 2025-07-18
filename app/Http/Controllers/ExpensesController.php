@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\CategoryExp;
-use App\Models\Expenses;
+use App\Models\Expense;
+use App\Models\RepeatableExpense;
+use App\Models\Scopes\BasePeriodScope;
 use App\Models\User;
 use App\Models\UserGroup;
 use Carbon\Carbon;
@@ -16,7 +18,7 @@ class ExpensesController extends Controller
 {
     public function getTotalExpenses()
     {
-        $totalExpenses = Expenses::selectRaw('category_id, SUM(sum) as total')
+        $totalExpenses = Expense::selectRaw('category_id, SUM(sum) as total')
             ->groupBy('category_id')
             ->get();
         return response()->json($totalExpenses);
@@ -26,7 +28,7 @@ class ExpensesController extends Controller
     {
         $isSpecial = $request->query('special') ?? 0;
         //DB::enableQueryLog();
-        $expenses = Expenses::whereHas('category', function ($q) use ($isSpecial) {
+        $expenses = Expense::whereHas('category', function ($q) use ($isSpecial) {
                 $q->where('special', $isSpecial)->where('isActive', true);
             })
             ->where('user_id', $user->id)
@@ -38,9 +40,9 @@ class ExpensesController extends Controller
     public function update(Request $expenseData)
     {
         if ($expenseData->id) {
-            $expense = Expenses::find($expenseData->id);
+            $expense = Expense::find($expenseData->id);
         } else {
-            $expense = new Expenses();
+            $expense = new Expense();
         }
         $expense->created_at = (new Carbon($expenseData->date))->toDateTimeString();
         $expense->desc = trim($expenseData->description);
@@ -48,10 +50,21 @@ class ExpensesController extends Controller
         $expense->user_id = $expenseData->user_id ?? Auth::user()->id;
         $expense->category_id = $expenseData->category_id;
         $expense->save();
+
+        if ($expenseData->repeatable == 'every-month') {
+            $expense->repeatable()->create([
+                'is_every_month' => true
+            ]);
+        } else if ($expenseData->repeatable == 'x-times' && $expenseData->repeat_times > 0) {
+            $expense->repeatable()->create([
+                'times' => $expenseData->repeat_times
+            ]);
+        }
+
         return Response::json($expense);
     }
 
-    public function delete(Expenses $expense)
+    public function delete(Expense $expense)
     {
         $expense->delete();
         return Response::json();
@@ -120,7 +133,7 @@ class ExpensesController extends Controller
             ->get(['id', 'title', 'str_id', 'currency_id']);
         $categoryIds = $categories->pluck('id')->all();
 
-        $categoriesWithAvg = Expenses::query()
+        $categoriesWithAvg = Expense::withoutGlobalScope(BasePeriodScope::class)
             ->whereBetween('created_at', [$start, $end])
             ->whereIn('category_id', $categoryIds)
             ->select([
@@ -136,5 +149,53 @@ class ExpensesController extends Controller
             'categories' => $categories,
             'avgs' => $categoriesWithAvg
         ]);
+    }
+
+    public function getScheduled(Request $request)
+    {
+        $query = RepeatableExpense::query()
+            ->with([
+                'expense:id,desc,user_id,category_id,sum',
+                'expense.category:id,title,currency_id',
+                'expense.category.currency:id,str_id'
+            ]) // жадная загрузка только нужных полей
+            ->withTrashed() // чтобы включать soft-deleted
+            ->orderByDesc('id');
+
+        // Фильтрация по is_every_month
+        if ($request->filled('is_every_month')) {
+            $query->where('is_every_month', $request->boolean('is_every_month'));
+        }
+
+        // Фильтрация по deleted
+        if ($request->filled('only_deleted')) {
+            $query->onlyTrashed();
+        } elseif ($request->filled('without_deleted')) {
+            $query->withoutTrashed();
+        }
+
+        // Фильтрация по user_id (через relation)
+        if ($request->filled('user_id')) {
+            $query->whereHas('expense', function ($q) use ($request) {
+                $q->where('user_id', $request->input('user_id'));
+            });
+        }
+
+        $repeatables = $query->paginate(15);
+
+        return response()->json($repeatables);
+    }
+
+    public function updateScheduled(Request $request)
+    {
+        $repeatableExpense = RepeatableExpense::withTrashed()->findOrFail($request->input('id'));
+        if ($repeatableExpense->is_every_month) {
+            $repeatableExpense->deleted_at = $request->input('deleted_at');
+        } else {
+            $repeatableExpense->times = $request->input('times');
+        }
+        $repeatableExpense->save();
+
+        return response()->json();
     }
 }

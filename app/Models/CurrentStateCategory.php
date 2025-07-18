@@ -27,8 +27,9 @@ class CurrentStateCategory extends Model
         static::addGlobalScope(new GroupScope);
 
         static::creating(function ($model) {
-            if (empty($model->group_id)) {
-                $model->group_id = Auth::user()->current_group_id;
+            $user = Auth::user();
+            if (empty($model->group_id) && $user) {
+                $model->group_id = $user->current_group_id;
             }
         });
     }
